@@ -3,32 +3,44 @@ package beam
 import (
 	"fmt"
 	"io"
+	"mime"
 	"net"
 	"net/http"
 	"os"
+	"path"
+	"strings"
 
 	"github.com/tachRoutine/ekiliBeam-go/static"
 )
 
 func StartServer(sharedDir string) string {
-	staticDir := static.FrontendFiles
-	// Serve assets under /assets/ with correct MIME type
-	assetsFs := http.FileServer(http.FS(staticDir))
-	http.HandleFunc("/assets/", func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path[len("/assets/"):] // remove /assets/ prefix
-		switch {
-		case len(path) > 3 && path[len(path)-3:] == ".js":
-			w.Header().Set("Content-Type", "application/javascript")
-		case len(path) > 4 && path[len(path)-4:] == ".css":
-			w.Header().Set("Content-Type", "text/css")
-		}
-		http.StripPrefix("/assets/", assetsFs).ServeHTTP(w, r)
-	})
-	// Optionally, serve index.html at root
+	// Serve embedded frontend
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./static/frontend/index.html")
+		urlPath := r.URL.Path
+		if urlPath == "/" {
+			urlPath = "/index.html"
+		}
+
+		// Open embedded file
+		file, err := static.FrontendFiles.Open("frontend" + urlPath)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		defer file.Close()
+
+		// Detecting MIME type
+		ext := strings.ToLower(path.Ext(urlPath))
+		if mimeType := mime.TypeByExtension(ext); mimeType != "" {
+			w.Header().Set("Content-Type", mimeType)
+		} else {
+			w.Header().Set("Content-Type", "application/octet-stream")
+		}
+
+		io.Copy(w, file)
 	})
 
+	// File APIs
 	http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
 		files, _ := os.ReadDir(sharedDir)
 		for _, f := range files {
@@ -56,7 +68,7 @@ func StartServer(sharedDir string) string {
 	})
 
 	ip := getLocalIP()
-	url := fmt.Sprintf("Open http://%s:8080", ip)
+	url := fmt.Sprintf("http://%s:8080", ip)
 	fmt.Println("Server started at", url)
 	http.ListenAndServe(":8080", nil)
 	return url
