@@ -11,7 +11,7 @@ import (
 )
 
 
-func StartServer(sharedDir string) {
+func StartServer(sharedDir string) string {
 	staticDir := static.FrontendFiles
 	fs := http.FileServer(http.FS(staticDir))
     http.Handle("/", fs)
@@ -43,8 +43,9 @@ func StartServer(sharedDir string) {
     })
 
     ip := getLocalIP()
-    fmt.Println("Open http://" + ip + ":8080")
+    url := fmt.Sprintf("Open http://%s:8080", ip)
     http.ListenAndServe(":8080", nil)
+	return url
 }
 
 func getLocalIP() string {

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"github.com/tachRoutine/ekiliBeam-go/beam"
 	"github.com/tachRoutine/ekiliBeam-go/pkg/qr"
 )
 
@@ -16,5 +17,6 @@ func main() {
 		return
 	}
 	fmt.Println("QR code generated and saved to", filename)
+	beam.StartServer(sharedDir)
 
 }
