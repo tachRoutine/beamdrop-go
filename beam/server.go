@@ -1,12 +1,15 @@
 package beam
 
 import (
-    "fmt"
-    "net"
-    "net/http"
-    "os"
-    "io"
+	"fmt"
+	"io"
+	"net"
+	"net/http"
+	"os"
+
+	"github.com/tachRoutine/ekiliBeam-go/static"
 )
+	
 
 func StartServer() {
 	fs := http.FileServer(http.Dir("./static"))

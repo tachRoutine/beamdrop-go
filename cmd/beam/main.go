@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/skip2/go-qrcode"
-	"github.com/tachRoutine/ekiliBeam-go.git/pkg/qr"
+	"github.com/tachRoutine/ekiliBeam-go/pkg/qr"
 )
 
 func main() {
@@ -17,5 +15,5 @@ func main() {
 		return
 	}
 	fmt.Println("QR code generated and saved to", filename)
-	
+
 }
