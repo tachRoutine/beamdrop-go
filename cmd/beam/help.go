@@ -3,6 +3,8 @@ package main
 func Help() string {
 	return `ekiliBeam - A simple file sharing tool
 
+NOTE: YOU NEED TO BE IN THE SAME NETWORK AS THE RECEIVER
+
 Usage:
   beam [options]
 
