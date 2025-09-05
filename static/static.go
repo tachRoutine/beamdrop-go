@@ -2,5 +2,5 @@ package static
 
 import "embed"
 
-//go:embed all:*
-var Files embed.FS
+//go:embed all:frontend*
+var FrontendFiles embed.FS

@@ -9,10 +9,11 @@ import (
 
 	"github.com/tachRoutine/ekiliBeam-go/static"
 )
-	
+
 
 func StartServer() {
-	fs := http.FileServer(http.Dir("./static"))
+	staticDir := static.FrontendFiles
+	fs := http.FileServer(http.FS(staticDir))
     http.Handle("/", fs)
 
     http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
