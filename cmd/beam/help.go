@@ -12,3 +12,7 @@ Options:
   -h, --help
 		Show this help message and exit	`
 }
+
+func PrintHelp() {
+	println(Help())
+}
