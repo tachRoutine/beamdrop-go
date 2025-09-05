@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	sharedDir := "./"
 	data := "ekilie.com"
 	filename := "qrcode.png"
 	err := qr.Generate(data, filename)

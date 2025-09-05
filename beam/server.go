@@ -11,20 +11,20 @@ import (
 )
 
 
-func StartServer() {
+func StartServer(sharedDir string) {
 	staticDir := static.FrontendFiles
 	fs := http.FileServer(http.FS(staticDir))
     http.Handle("/", fs)
 
     http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
-        files, _ := os.ReadDir("./shared")
+        files, _ := os.ReadDir(sharedDir)
         for _, f := range files {
             fmt.Fprintln(w, f.Name())
         }
     })
 
     http.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
-        f, err := os.Open("./shared/" + r.URL.Query().Get("file"))
+        f, err := os.Open(sharedDir + "/" + r.URL.Query().Get("file"))
         if err != nil {
             http.Error(w, "File not found", 404)
             return
@@ -36,7 +36,7 @@ func StartServer() {
     http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
         file, header, _ := r.FormFile("file")
         defer file.Close()
-        out, _ := os.Create("./shared/" + header.Filename)
+        out, _ := os.Create(sharedDir + "/" + header.Filename)
         defer out.Close()
         io.Copy(out, file)
         fmt.Fprintln(w, "Uploaded")
