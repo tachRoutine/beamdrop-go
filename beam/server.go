@@ -12,7 +12,6 @@ func StartServer() {
 	fs := http.FileServer(http.Dir("./static"))
     http.Handle("/", fs)
 
-    // list files
     http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
         files, _ := os.ReadDir("./shared")
         for _, f := range files {
@@ -20,7 +19,6 @@ func StartServer() {
         }
     })
 
-    // download
     http.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
         f, err := os.Open("./shared/" + r.URL.Query().Get("file"))
         if err != nil {
@@ -31,7 +29,6 @@ func StartServer() {
         io.Copy(w, f)
     })
 
-    // upload
     http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
         file, header, _ := r.FormFile("file")
         defer file.Close()
