@@ -68,7 +68,7 @@ func StartServer(sharedDir string) string {
 
 	ip := getLocalIP()
 	url := fmt.Sprintf("http://%s:8080", ip)
-	fmt.Println("Server started at", url)
+	fmt.Println("Server started at", url, "sharing directory:", sharedDir)
 	http.ListenAndServe(":8080", nil)
 	return url
 }
