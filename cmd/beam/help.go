@@ -11,8 +11,7 @@ Usage:
 Options:
   -dir string
 		Directory to share files from (default ".")
-  -h, --help
-		Show this help message and exit	`
+  -h, --help	`
 }
 
 func PrintHelp() {
