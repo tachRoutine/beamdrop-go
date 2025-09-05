@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 
 	"github.com/tachRoutine/ekiliBeam-go/beam"
@@ -8,8 +9,14 @@ import (
 )
 
 func main() {
-	sharedDir := "./"
-	url := beam.StartServer(sharedDir)
+	
+	sharedDir := flag.String("dir", ".", "Directory to share files from")
+	flag.Parse()
+	if (*sharedDir == "") {
+		fmt.Println("Shared directory is required")
+		return
+	}
+	url := beam.StartServer(*sharedDir)
 	fmt.Println("Server started at", url)
 	filename := "qrcode.png"
 	err := qr.Generate(url, filename)

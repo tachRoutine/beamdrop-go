@@ -14,7 +14,6 @@ import (
 )
 
 func StartServer(sharedDir string) string {
-	// Serve embedded frontend
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		urlPath := r.URL.Path
 		if urlPath == "/" {
