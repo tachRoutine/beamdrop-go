@@ -9,14 +9,13 @@ import (
 
 func main() {
 	sharedDir := "./"
-	data := "ekilie.com"
+	url := beam.StartServer(sharedDir)
+	fmt.Println("Server started at", url)
 	filename := "qrcode.png"
-	err := qr.Generate(data, filename)
+	err := qr.Generate(url, filename)
 	if err != nil {
 		fmt.Println("Error generating QR code:", err)
 		return
 	}
 	fmt.Println("QR code generated and saved to", filename)
-	beam.StartServer(sharedDir)
-
 }
