@@ -79,16 +79,11 @@ func StartServer(sharedDir string) string {
 		}
 		defer f.Close()
 		stat, _ := f.Stat()
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Disposition", "attachment; filename=\""+stat.Name()+"\"")
+		w.Header().Set("Content-Type", "application/octet-stream")
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", stat.Size()))
 		w.WriteHeader(http.StatusOK)
-		// For actual file download, you would stream the file, but for JSON response:
-		json.NewEncoder(w).Encode(File{
-			Name:    stat.Name(),
-			Size:    FormatFileSize(stat.Size()),
-			IsDir:   stat.IsDir(),
-			ModTime: FormatModTime(stat.ModTime().Format(time.RFC3339)),
-			Path:    path.Join(sharedDir, stat.Name()),
-		})
+		io.Copy(w, f)
 	})
 
 	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
