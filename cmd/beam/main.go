@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"time"
 
 	"github.com/tachRoutine/beamdrop-go/beam"
 	"github.com/tachRoutine/beamdrop-go/pkg/qr"
@@ -25,9 +26,17 @@ func main() {
 		PrintHelp()
 		return
 	}
-	url := beam.StartServer(*sharedDir)
-	filename := "qrcode.png"
-	err := qr.Generate(url, filename)
+
+	url := make(chan string)
+	go func() {
+		url <- beam.StartServer(*sharedDir)
+	}()
+
+	fmt.Println("Starting server...")
+	time.Sleep(1 * time.Second)
+	serverUrl := <-url
+	filename := serverUrl + "qrcode.png"
+	err := qr.Generate(serverUrl, filename)
 	if err != nil {
 		fmt.Println("Error generating QR code:", err)
 		return
