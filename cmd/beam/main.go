@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	
+
 	sharedDir := flag.String("dir", ".", "Directory to share files from")
 	help := flag.Bool("h", false, "Show help message")
 	flag.Parse()
@@ -18,7 +18,7 @@ func main() {
 	// 	PrintHelp()
 	// 	return
 	// }
-	if (*sharedDir == "") {
+	if *sharedDir == "" {
 		fmt.Println("Shared directory is required")
 		return
 	}
@@ -35,7 +35,7 @@ func main() {
 	fmt.Println("Starting server...")
 	time.Sleep(1 * time.Second)
 	serverUrl := <-url
-	filename := serverUrl + "qrcode.png"
+	filename := "qrcode.png"
 	err := qr.Generate(serverUrl, filename)
 	if err != nil {
 		fmt.Println("Error generating QR code:", err)
