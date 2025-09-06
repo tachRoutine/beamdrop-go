@@ -3,6 +3,8 @@ package beam
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/tachRoutine/beamdrop-go/pkg/qr"
+	"github.com/tachRoutine/beamdrop-go/static"
 	"io"
 	"mime"
 	"net"
@@ -11,10 +13,6 @@ import (
 	"path"
 	"strings"
 	"time"
-
-	"github.com/skip2/go-qrcode"
-	"github.com/tachRoutine/beamdrop-go/pkg/qr"
-	"github.com/tachRoutine/beamdrop-go/static"
 )
 
 type File struct {
