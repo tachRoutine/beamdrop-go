@@ -1,6 +1,7 @@
 package beam
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"mime"
@@ -9,15 +10,17 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/tachRoutine/beamdrop-go/static"
 )
 
 type File struct {
-	Name                string      `json:"name"`
-	Size                int64       `json:"size"`
-	IsDir  bool        `json:"isDir"`
-	Info                os.FileInfo `json:"-"`
+	Name    string `json:"name"`
+	Size    int64  `json:"size"`
+	IsDir   bool   `json:"isDir"`
+	ModTime string `json:"modTime"`
+	Path    string `json:"path"`
 }
 
 func StartServer(sharedDir string) string {
@@ -51,11 +54,14 @@ func StartServer(sharedDir string) string {
 		for _, f := range files {
 			fileInfo, _ := f.Info()
 			file := File{
-				Name:               f.Name(),
-				IsDir:              f.IsDir(),
-				Info:               fileInfo,
+				Name:  fileInfo.Name(),
+				IsDir: fileInfo.IsDir(),
+				Size:  fileInfo.Size(),
+				ModTime: fileInfo.ModTime().Format(time.RFC3339),
+				Path:  path.Join(sharedDir, fileInfo.Name()),
 			}
-			fmt.Fprintln(w, file)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(file)
 		}
 	})
 
