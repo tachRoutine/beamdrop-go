@@ -17,7 +17,7 @@ import (
 
 type File struct {
 	Name    string `json:"name"`
-	Size    int64  `json:"size"`
+	Size    string `json:"size"`
 	IsDir   bool   `json:"isDir"`
 	ModTime string `json:"modTime"`
 	Path    string `json:"path"`
@@ -32,12 +32,13 @@ func StartServer(sharedDir string) string {
 
 		file, err := static.FrontendFiles.Open("frontend" + urlPath)
 		if err != nil {
-			http.NotFound(w, r)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Not found"})
 			return
 		}
 		defer file.Close()
 
-		// Detecting MIME type
 		ext := strings.ToLower(path.Ext(urlPath))
 		if mimeType := mime.TypeByExtension(ext); mimeType != "" {
 			w.Header().Set("Content-Type", mimeType)
@@ -51,37 +52,72 @@ func StartServer(sharedDir string) string {
 	// File APIs
 	http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
 		files, _ := os.ReadDir(sharedDir)
+		var fileList []File
 		for _, f := range files {
 			fileInfo, _ := f.Info()
 			file := File{
-				Name:  fileInfo.Name(),
-				IsDir: fileInfo.IsDir(),
-				Size:  fileInfo.Size(),
-				ModTime: fileInfo.ModTime().Format(time.RFC3339),
-				Path:  path.Join(sharedDir, fileInfo.Name()),
+				Name:    fileInfo.Name(),
+				IsDir:   fileInfo.IsDir(),
+				Size:    FormatFileSize(fileInfo.Size()),
+				ModTime: FormatModTime(fileInfo.ModTime().Format(time.RFC3339)),
+				Path:    path.Join(sharedDir, fileInfo.Name()),
 			}
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(file)
+			fileList = append(fileList, file)
 		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(fileList)
 	})
 
 	http.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
-		f, err := os.Open(sharedDir + "/" + r.URL.Query().Get("file"))
+		fileName := r.URL.Query().Get("file")
+		f, err := os.Open(sharedDir + "/" + fileName)
 		if err != nil {
-			http.Error(w, "File not found", 404)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			json.NewEncoder(w).Encode(map[string]string{"error": "File not found"})
 			return
 		}
 		defer f.Close()
-		io.Copy(w, f)
+		stat, _ := f.Stat()
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		// For actual file download, you would stream the file, but for JSON response:
+		json.NewEncoder(w).Encode(File{
+			Name:    stat.Name(),
+			Size:    FormatFileSize(stat.Size()),
+			IsDir:   stat.IsDir(),
+			ModTime: FormatModTime(stat.ModTime().Format(time.RFC3339)),
+			Path:    path.Join(sharedDir, stat.Name()),
+		})
 	})
 
 	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
-		file, header, _ := r.FormFile("file")
+		file, header, err := r.FormFile("file")
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid upload"})
+			return
+		}
 		defer file.Close()
-		out, _ := os.Create(sharedDir + "/" + header.Filename)
+		out, err := os.Create(sharedDir + "/" + header.Filename)
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to save file"})
+			return
+		}
 		defer out.Close()
-		io.Copy(out, file)
-		fmt.Fprintln(w, "Uploaded")
+		_, err = io.Copy(out, file)
+		if err != nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to write file"})
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{"message": "Uploaded", "file": header.Filename})
 	})
 
 	ip := getLocalIP()
@@ -101,4 +137,24 @@ func getLocalIP() string {
 		}
 	}
 	return "localhost"
+}
+
+func FormatFileSize(size int64) string {
+	if size < 1024 {
+		return fmt.Sprintf("%d B", size)
+	} else if size < 1024*1024 {
+		return fmt.Sprintf("%.2f KB", float64(size)/1024)
+	} else if size < 1024*1024*1024 {
+		return fmt.Sprintf("%.2f MB", float64(size)/(1024*1024))
+	} else {
+		return fmt.Sprintf("%.2f GB", float64(size)/(1024*1024*1024))
+	}
+}
+
+func FormatModTime(modTime string) string {
+	t, err := time.Parse(time.RFC3339, modTime)
+	if err != nil {
+		return modTime
+	}
+	return t.Format("2006-01-02 15:04:05")
 }
