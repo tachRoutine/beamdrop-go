@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/tachRoutine/ekiliBeam-go/beam"
-	"github.com/tachRoutine/ekiliBeam-go/pkg/qr"
+	"github.com/tachRoutine/beamdrop-go/beam"
+	"github.com/tachRoutine/beamdrop-go/pkg/qr"
 )
 
 func main() {

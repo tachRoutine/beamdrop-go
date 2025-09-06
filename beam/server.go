@@ -10,7 +10,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/tachRoutine/ekiliBeam-go/static"
+	"github.com/tachRoutine/beamdrop-go/static"
 )
 
 func StartServer(sharedDir string) string {

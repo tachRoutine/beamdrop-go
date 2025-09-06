@@ -1,4 +1,4 @@
-module github.com/tachRoutine/ekiliBeam-go
+module github.com/tachRoutine/beamdrop-go
 
 go 1.25.0
 
