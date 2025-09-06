@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/tachRoutine/beamdrop-go/pkg/qr"
 	"github.com/tachRoutine/beamdrop-go/static"
 )
 
@@ -23,7 +24,7 @@ type File struct {
 	Path    string `json:"path"`
 }
 
-func StartServer(sharedDir string) string {
+func StartServer(sharedDir string) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		urlPath := r.URL.Path
 		if urlPath == "/" {
@@ -111,9 +112,16 @@ func StartServer(sharedDir string) string {
 
 	ip := getLocalIP()
 	url := fmt.Sprintf("http://%s:8080", ip)
+
+	filename := "qrcode.png"
+	err := qr.Generate(url, filename)
+	if err != nil {
+		fmt.Println("Error generating QR code:", err)
+		return
+	}
+	fmt.Println("QR code generated and saved to", filename)
 	fmt.Println("Server started at", url, "sharing directory:", sharedDir)
-	go http.ListenAndServe(":8080", nil)
-	return url
+	http.ListenAndServe(":8080", nil)
 }
 
 func getLocalIP() string {
