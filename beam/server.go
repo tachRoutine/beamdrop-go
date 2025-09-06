@@ -13,6 +13,13 @@ import (
 	"github.com/tachRoutine/beamdrop-go/static"
 )
 
+type File struct {
+	Name                string      `json:"name"`
+	Size                int64       `json:"size"`
+	IsDir  bool        `json:"isDir"`
+	Info                os.FileInfo `json:"-"`
+}
+
 func StartServer(sharedDir string) string {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		urlPath := r.URL.Path
@@ -20,7 +27,6 @@ func StartServer(sharedDir string) string {
 			urlPath = "/index.html"
 		}
 
-		// Open embedded file
 		file, err := static.FrontendFiles.Open("frontend" + urlPath)
 		if err != nil {
 			http.NotFound(w, r)
@@ -43,7 +49,13 @@ func StartServer(sharedDir string) string {
 	http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
 		files, _ := os.ReadDir(sharedDir)
 		for _, f := range files {
-			fmt.Fprintln(w, f.Name())
+			fileInfo, _ := f.Info()
+			file := File{
+				Name:               f.Name(),
+				IsDir:              f.IsDir(),
+				Info:               fileInfo,
+			}
+			fmt.Fprintln(w, file)
 		}
 	})
 
