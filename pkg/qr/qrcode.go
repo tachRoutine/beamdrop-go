@@ -1,6 +1,7 @@
 package qr
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/skip2/go-qrcode"
@@ -28,5 +29,16 @@ func Generate(data string, filename string) error {
 	if err != nil {
 		return err
 	}
+	
 	return nil
+}
+
+func ShowQrCode(url string) {
+	qrCode, err := qrcode.New(url, qrcode.Medium)
+	if err != nil {
+		fmt.Println("Error creating QR code for terminal:", err)
+		return
+	}
+	fmt.Println("QR code for", url, ":")
+	fmt.Println(qrCode.ToSmallString(false))
 }

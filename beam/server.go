@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/skip2/go-qrcode"
 	"github.com/tachRoutine/beamdrop-go/pkg/qr"
 	"github.com/tachRoutine/beamdrop-go/static"
 )
@@ -113,13 +114,7 @@ func StartServer(sharedDir string) {
 	ip := getLocalIP()
 	url := fmt.Sprintf("http://%s:8080", ip)
 
-	filename := "qrcode.png"
-	err := qr.Generate(url, filename)
-	if err != nil {
-		fmt.Println("Error generating QR code:", err)
-		return
-	}
-	fmt.Println("QR code generated and saved to", filename)
+	qr.ShowQrCode(url)
 	fmt.Println("Server started at", url, "sharing directory:", sharedDir)
 	http.ListenAndServe(":8080", nil)
 }
