@@ -69,20 +69,14 @@ func StartServer(sharedDir string) string {
 	})
 
 	http.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
-		fileName := r.URL.Query().Get("file")
-		f, err := os.Open(sharedDir + "/" + fileName)
+		f, err := os.Open(sharedDir + "/" + r.URL.Query().Get("file"))
+		fmt.Println("Downloading file:", f.Name())
 		if err != nil {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(map[string]string{"error": "File not found"})
+			http.Error(w, "File not found", 404)
 			return
 		}
 		defer f.Close()
-		stat, _ := f.Stat()
-		w.Header().Set("Content-Disposition", "attachment; filename=\""+stat.Name()+"\"")
-		w.Header().Set("Content-Type", "application/octet-stream")
-		w.Header().Set("Content-Length", fmt.Sprintf("%d", stat.Size()))
-		w.WriteHeader(http.StatusOK)
+		fmt.Println("Downloading file:", f.Name())
 		io.Copy(w, f)
 	})
 
