@@ -118,6 +118,7 @@ func StartServer(sharedDir string) {
 	fmt.Println("Server started at", url, "sharing directory:", sharedDir)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", config.GetConfig().PORT), nil)
 	if err != nil {
+		//TODO: i will handle cases like port already in use
 		fmt.Println("Server error:", err)
 	}
 }
