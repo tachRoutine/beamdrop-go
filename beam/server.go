@@ -90,41 +90,58 @@ func StartServer(sharedDir string) {
 	})
 
 	http.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
-		f, err := os.Open(sharedDir + "/" + r.URL.Query().Get("file"))
-		fmt.Println("Downloading file:", f.Name())
+		filename := r.URL.Query().Get("file")
+		filePath := sharedDir + "/" + filename
+		
+		logger.Info("Download request for file: %s", filename)
+		f, err := os.Open(filePath)
 		if err != nil {
+			logger.Error("Failed to open file %s: %v", filePath, err)
 			http.Error(w, "File not found", 404)
 			return
 		}
 		defer f.Close()
-		fmt.Println("Downloading file:", f.Name())
+		
+		logger.Info("Serving download for file: %s", filename)
 		io.Copy(w, f)
+		logger.Info("Download completed for file: %s", filename)
 	})
 
 	http.HandleFunc("/upload", func(w http.ResponseWriter, r *http.Request) {
+		logger.Info("Upload request received")
 		file, header, err := r.FormFile("file")
 		if err != nil {
+			logger.Error("Invalid upload request: %v", err)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{"error": "Invalid upload"})
 			return
 		}
 		defer file.Close()
-		out, err := os.Create(sharedDir + "/" + header.Filename)
+		
+		filePath := sharedDir + "/" + header.Filename
+		logger.Info("Uploading file: %s (size: %d bytes)", header.Filename, header.Size)
+		
+		out, err := os.Create(filePath)
 		if err != nil {
+			logger.Error("Failed to create file %s: %v", filePath, err)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to save file"})
 			return
 		}
 		defer out.Close()
+		
 		_, err = io.Copy(out, file)
 		if err != nil {
+			logger.Error("Failed to write file %s: %v", filePath, err)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to write file"})
 			return
 		}
+		
+		logger.Info("File uploaded successfully: %s", header.Filename)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(map[string]string{"message": "Uploaded", "file": header.Filename})
@@ -133,24 +150,34 @@ func StartServer(sharedDir string) {
 	ip := GetLocalIP()
 	url := fmt.Sprintf("http://%s:%d", ip, config.GetConfig().PORT)
 
+	logger.Info("Generating QR code for URL: %s", url)
 	qr.ShowQrCode(url)
-	fmt.Println("Server started at", url, "sharing directory:", sharedDir)
+	logger.Info("Server started at %s sharing directory: %s", url, sharedDir)
+	
 	err := http.ListenAndServe(fmt.Sprintf(":%d", config.GetConfig().PORT), nil)
 	if err != nil {
-		//TODO: i will handle cases like port already in use
-		fmt.Println("Server error:", err)
+		logger.Fatal("Server error: %v", err)
 	}
 }
 
 func GetLocalIP() string {
-	addrs, _ := net.InterfaceAddrs()
+	logger.Debug("Detecting local IP address")
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		logger.Warn("Failed to get network interfaces: %v", err)
+		return "localhost"
+	}
+	
 	for _, addr := range addrs {
 		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
+				logger.Debug("Found local IP: %s", ipnet.IP.String())
 				return ipnet.IP.String()
 			}
 		}
 	}
+	
+	logger.Warn("No local IP found, using localhost")
 	return "localhost"
 }
 
