@@ -1,9 +1,9 @@
 package config
 
-const PORT = 55555
+const PORT = 7777
 
 type Config struct {
-	PORT	  int 
+	PORT int
 }
 
 func GetConfig() Config {

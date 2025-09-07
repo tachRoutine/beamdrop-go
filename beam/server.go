@@ -116,7 +116,10 @@ func StartServer(sharedDir string) {
 
 	qr.ShowQrCode(url)
 	fmt.Println("Server started at", url, "sharing directory:", sharedDir)
-	http.ListenAndServe(fmt.Sprintf(":%d", config.GetConfig().PORT), nil)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", config.GetConfig().PORT), nil)
+	if err != nil {
+		fmt.Println("Server error:", err)
+	}
 }
 
 func GetLocalIP() string {
