@@ -28,7 +28,7 @@ type File struct {
 
 func StartServer(sharedDir string) {
 	logger.Info("Initializing HTTP handlers")
-	
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		urlPath := r.URL.Path
 		if urlPath == "/" {
@@ -67,7 +67,7 @@ func StartServer(sharedDir string) {
 			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to read directory"})
 			return
 		}
-		
+
 		var fileList []File
 		for _, f := range files {
 			fileInfo, err := f.Info()
@@ -92,7 +92,7 @@ func StartServer(sharedDir string) {
 	http.HandleFunc("/download", func(w http.ResponseWriter, r *http.Request) {
 		filename := r.URL.Query().Get("file")
 		filePath := sharedDir + "/" + filename
-		
+
 		logger.Info("Download request for file: %s", filename)
 		f, err := os.Open(filePath)
 		if err != nil {
@@ -101,7 +101,7 @@ func StartServer(sharedDir string) {
 			return
 		}
 		defer f.Close()
-		
+
 		logger.Info("Serving download for file: %s", filename)
 		io.Copy(w, f)
 		logger.Info("Download completed for file: %s", filename)
@@ -118,10 +118,10 @@ func StartServer(sharedDir string) {
 			return
 		}
 		defer file.Close()
-		
+
 		filePath := sharedDir + "/" + header.Filename
 		logger.Info("Uploading file: %s (size: %d bytes)", header.Filename, header.Size)
-		
+
 		out, err := os.Create(filePath)
 		if err != nil {
 			logger.Error("Failed to create file %s: %v", filePath, err)
@@ -131,7 +131,7 @@ func StartServer(sharedDir string) {
 			return
 		}
 		defer out.Close()
-		
+
 		_, err = io.Copy(out, file)
 		if err != nil {
 			logger.Error("Failed to write file %s: %v", filePath, err)
@@ -140,7 +140,7 @@ func StartServer(sharedDir string) {
 			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to write file"})
 			return
 		}
-		
+
 		logger.Info("File uploaded successfully: %s", header.Filename)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -153,7 +153,7 @@ func StartServer(sharedDir string) {
 	logger.Info("Generating QR code for URL: %s", url)
 	qr.ShowQrCode(url)
 	logger.Info("Server started at %s sharing directory: %s", url, sharedDir)
-	
+
 	err := http.ListenAndServe(fmt.Sprintf(":%d", config.GetConfig().PORT), nil)
 	if err != nil {
 		logger.Fatal("Server error: %v", err)
@@ -167,7 +167,7 @@ func GetLocalIP() string {
 		logger.Warn("Failed to get network interfaces: %v", err)
 		return "localhost"
 	}
-	
+
 	for _, addr := range addrs {
 		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 			if ipnet.IP.To4() != nil {
@@ -176,7 +176,7 @@ func GetLocalIP() string {
 			}
 		}
 	}
-	
+
 	logger.Warn("No local IP found, using localhost")
 	return "localhost"
 }

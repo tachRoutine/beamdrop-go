@@ -23,7 +23,7 @@ func Generate(data string, filename string) error {
 		logger.Error("Failed to generate PNG data: %v", err)
 		return err
 	}
-	
+
 	// Write PNG data to a file
 	filePath := "./" + filename
 	logger.Debug("Saving QR code to file: %s", filePath)
@@ -33,13 +33,13 @@ func Generate(data string, filename string) error {
 		return err
 	}
 	defer file.Close()
-	
+
 	_, err = file.Write(pngData)
 	if err != nil {
 		logger.Error("Failed to write PNG data to file %s: %v", filePath, err)
 		return err
 	}
-	
+
 	logger.Info("QR code successfully saved to: %s", filePath)
 	return nil
 }
