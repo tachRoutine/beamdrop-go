@@ -3,8 +3,6 @@ package beam
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/tachRoutine/beamdrop-go/pkg/qr"
-	"github.com/tachRoutine/beamdrop-go/static"
 	"io"
 	"mime"
 	"net"
@@ -13,6 +11,10 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"github.com/tachRoutine/beamdrop-go/config"
+	"github.com/tachRoutine/beamdrop-go/pkg/qr"
+	"github.com/tachRoutine/beamdrop-go/static"
 )
 
 type File struct {
@@ -110,11 +112,11 @@ func StartServer(sharedDir string) {
 	})
 
 	ip := getLocalIP()
-	url := fmt.Sprintf("http://%s:8080", ip)
+	url := fmt.Sprintf("http://%s:%d", ip, config.GetConfig().PORT)
 
 	qr.ShowQrCode(url)
 	fmt.Println("Server started at", url, "sharing directory:", sharedDir)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(fmt.Sprintf(":%d", config.GetConfig().PORT), nil)
 }
 
 func getLocalIP() string {
