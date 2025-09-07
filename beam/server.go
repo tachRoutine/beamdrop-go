@@ -111,7 +111,7 @@ func StartServer(sharedDir string) {
 		json.NewEncoder(w).Encode(map[string]string{"message": "Uploaded", "file": header.Filename})
 	})
 
-	ip := getLocalIP()
+	ip := GetLocalIP()
 	url := fmt.Sprintf("http://%s:%d", ip, config.GetConfig().PORT)
 
 	qr.ShowQrCode(url)
@@ -119,7 +119,7 @@ func StartServer(sharedDir string) {
 	http.ListenAndServe(fmt.Sprintf(":%d", config.GetConfig().PORT), nil)
 }
 
-func getLocalIP() string {
+func GetLocalIP() string {
 	addrs, _ := net.InterfaceAddrs()
 	for _, addr := range addrs {
 		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
