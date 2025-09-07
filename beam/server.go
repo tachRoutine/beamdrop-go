@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/tachRoutine/beamdrop-go/config"
+	"github.com/tachRoutine/beamdrop-go/pkg/logger"
 	"github.com/tachRoutine/beamdrop-go/pkg/qr"
 	"github.com/tachRoutine/beamdrop-go/static"
 )
@@ -26,14 +27,18 @@ type File struct {
 }
 
 func StartServer(sharedDir string) {
+	logger.Info("Initializing HTTP handlers")
+	
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		urlPath := r.URL.Path
 		if urlPath == "/" {
 			urlPath = "/index.html"
 		}
 
+		logger.Debug("Serving static file: %s", urlPath)
 		file, err := static.FrontendFiles.Open("frontend" + urlPath)
 		if err != nil {
+			logger.Warn("Static file not found: %s", urlPath)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusNotFound)
 			json.NewEncoder(w).Encode(map[string]string{"error": "Not found"})
@@ -53,10 +58,23 @@ func StartServer(sharedDir string) {
 
 	// File APIs
 	http.HandleFunc("/files", func(w http.ResponseWriter, r *http.Request) {
-		files, _ := os.ReadDir(sharedDir)
+		logger.Debug("Listing files from directory: %s", sharedDir)
+		files, err := os.ReadDir(sharedDir)
+		if err != nil {
+			logger.Error("Failed to read directory %s: %v", sharedDir, err)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Failed to read directory"})
+			return
+		}
+		
 		var fileList []File
 		for _, f := range files {
-			fileInfo, _ := f.Info()
+			fileInfo, err := f.Info()
+			if err != nil {
+				logger.Warn("Failed to get file info for %s: %v", f.Name(), err)
+				continue
+			}
 			file := File{
 				Name:    fileInfo.Name(),
 				IsDir:   fileInfo.IsDir(),
@@ -66,6 +84,7 @@ func StartServer(sharedDir string) {
 			}
 			fileList = append(fileList, file)
 		}
+		logger.Debug("Found %d files/directories", len(fileList))
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(fileList)
 	})

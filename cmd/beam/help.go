@@ -1,5 +1,7 @@
 package main
 
+import "github.com/tachRoutine/beamdrop-go/pkg/logger"
+
 func Help() string {
 	return `beamdrop - A simple file sharing tool
 
@@ -15,5 +17,5 @@ Options:
 }
 
 func PrintHelp() {
-	println(Help())
+	logger.Info(Help())
 }
