@@ -84,7 +84,6 @@ func StartServer(cfg ServerConfig) {
 }
 
 func (s *Server) setupRoutes() {
-	// Middleware for authentication
 	authMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
 			if s.config.Password != "" {
@@ -100,7 +99,6 @@ func (s *Server) setupRoutes() {
 		}
 	}
 
-	// Static files and frontend
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		urlPath := r.URL.Path
 		if urlPath == "/" {
