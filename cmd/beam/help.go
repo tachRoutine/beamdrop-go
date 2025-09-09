@@ -13,7 +13,9 @@ Usage:
 Options:
   -dir string
 		Directory to share files from (default ".")
-  -h, --help	`
+  -h, --help
+  --no-qr 
+  		Disable QR code generation`
 }
 
 func PrintHelp() {
