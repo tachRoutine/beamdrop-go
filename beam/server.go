@@ -26,7 +26,7 @@ type File struct {
 	Path    string `json:"path"`
 }
 
-func StartServer(sharedDir string) {
+func StartServer(sharedDir string, flags config.Flags) {
 	logger.Info("Initializing HTTP handlers")
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -150,8 +150,11 @@ func StartServer(sharedDir string) {
 	ip := GetLocalIP()
 	url := fmt.Sprintf("http://%s:%d", ip, config.GetConfig().PORT)
 
-	logger.Info("Generating QR code for URL: %s", url)
-	qr.ShowQrCode(url)
+	if !flags.NoQR {
+		qr.ShowQrCode(url)
+	} else {
+		logger.Info("QR code generation is disabled")
+	}
 	logger.Info("Server started at %s sharing directory: %s", url, sharedDir)
 
 	err := http.ListenAndServe(fmt.Sprintf(":%d", config.GetConfig().PORT), nil)
