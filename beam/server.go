@@ -152,8 +152,6 @@ func StartServer(sharedDir string, flags config.Flags) {
 
 	if !flags.NoQR {
 		qr.ShowQrCode(url)
-	} else {
-		logger.Info("QR code generation is disabled")
 	}
 	logger.Info("Server started at %s sharing directory: %s", url, sharedDir)
 
