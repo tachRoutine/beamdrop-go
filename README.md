@@ -1,3 +1,3 @@
 # beamdrop-go
 
-A Proof of concept
+Development has moved to https://github.com/ekilie/beamdrop.git
